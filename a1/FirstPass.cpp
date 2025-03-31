@@ -105,6 +105,7 @@ bool runOnBasicBlock(BasicBlock &B) {
                             Value *op1 = BO->getOperand(0);
                             Value *op2 = BO->getOperand(1);
                             
+                            //Identità algebrica per somme
                             if(BO->getOpcode() == Instruction::Add) {
                                 errs() << "op1: " << *op1 << " op2: " << *op2 << '\n';
                                 errs() << "Op code: " << BO->getOpcode() << '\n';
@@ -127,6 +128,38 @@ bool runOnBasicBlock(BasicBlock &B) {
                                         continue;
                                     }
                                 }
+
+
+                            }
+
+
+                            //Identità algebrica per moltiplicazioni
+                            if(BO->getOpcode() == Instruction::Mul) {
+                                errs() << "op1: " << *op1 << " op2: " << *op2 << '\n';
+                                errs() << "Op code: " << BO->getOpcode() << '\n';
+
+                                //Senza l'else/if, il codice entra solo se è il primo operando a essere la variabile :(
+                                if(auto *CI = dyn_cast<ConstantInt>(op2)) {
+                                    if (CI->isOne()) {
+                                        errs() << "hi!\n";
+                                        BO->replaceAllUsesWith(op1);
+                                        BO->eraseFromParent();
+                                        changed = true;
+                                        continue;
+                                    }
+                                }
+
+                                else if(auto *CI = dyn_cast<ConstantInt>(op1)) {
+                                    errs() << "hello!\n";
+                                    if (CI->isOne()) {
+                                        BO->replaceAllUsesWith(op2);
+                                        BO->eraseFromParent();
+                                        changed = true;
+                                        continue;
+                                    }
+                                }
+
+                                
 
 
                             }
