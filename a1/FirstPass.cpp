@@ -106,9 +106,10 @@ bool runOnBasicBlock(BasicBlock &B) {
                             Value *op2 = BO->getOperand(1);
                             
                             if(BO->getOpcode() == Instruction::Add) {
-                                errs() << "op1: " << *op1 << "op2: " << *op2 << '\n';
+                                errs() << "op1: " << *op1 << " op2: " << *op2 << '\n';
                                 errs() << "Op code: " << BO->getOpcode() << '\n';
 
+                                //Senza l'else/if, il codice entra solo se è il primo operando a essere la variabile :(
                                 if(auto *CI = dyn_cast<ConstantInt>(op2)) {
                                     if (CI->isZero()) {
                                         BO->replaceAllUsesWith(op1);
@@ -117,6 +118,16 @@ bool runOnBasicBlock(BasicBlock &B) {
                                         continue;
                                     }
                                 }
+
+                                else if(auto *CI = dyn_cast<ConstantInt>(op1)) {
+                                    if (CI->isZero()) {
+                                        BO->replaceAllUsesWith(op2);
+                                        BO->eraseFromParent();
+                                        changed = true;
+                                        continue;
+                                    }
+                                }
+
 
                             }
                         
