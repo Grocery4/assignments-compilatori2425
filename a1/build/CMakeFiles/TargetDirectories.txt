@@ -1,0 +1,9 @@
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/intrinsics_gen.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/omp_gen.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/acc_gen.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/ARMTargetParserTableGen.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/AArch64TargetParserTableGen.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/RISCVTargetParserTableGen.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/FirstPass.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/edit_cache.dir
+/home/jrk-wsl/compilatori/assignments/a1/build/CMakeFiles/rebuild_cache.dir
