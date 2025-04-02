@@ -22,6 +22,7 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/raw_ostream.h"
+#include <map>
 
 using namespace llvm;
 
@@ -120,10 +121,6 @@ namespace {
                                     continue;
                                 }
                             }
-
-                            
-
-
                         }
                     
                     }
@@ -131,75 +128,75 @@ namespace {
             
             }
 
-        // return true;
-        return changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
+            // return true;
+            return changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
         }
     
     };
     
     struct StrengthReductionPass : PassInfoMixin<StrengthReductionPass> {
-    // Main entry point, takes IR unit to run the pass on (&F) and the
-    // corresponding pass manager (to be queried if need be).
-    PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
-        bool changed = false;
+        // Main entry point, takes IR unit to run the pass on (&F) and the
+        // corresponding pass manager (to be queried if need be).
+        PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+            bool changed = false;
 
-        for (auto &B : F) { // Iterate over basic blocks
-            for (auto &Inst : B) { // Iterate over instructions
-                ConstantInt *C;
-                Value *Param;
+            for (auto &B : F) { // Iterate over basic blocks
+                for (auto &Inst : B) { // Iterate over instructions
+                    ConstantInt *C;
+                    Value *Param;
 
-                // Check if the instruction has a constant operand
-                if (getConstantFromInstruction(Inst, C, Param)) {
-                    unsigned int instructionOpcode = Inst.getOpcode();
+                    // Check if the instruction has a constant operand
+                    if (getConstantFromInstruction(Inst, C, Param)) {
+                        unsigned int instructionOpcode = Inst.getOpcode();
 
-                    switch (instructionOpcode) {
-                        case Instruction::Mul: {
-                            if (C->getValue().isPowerOf2()) {
-                                Constant *shiftCount = ConstantInt::get(C->getType(), C->getValue().exactLogBase2());
-                                Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
-                                shift_left->insertAfter(&Inst);
-                                Inst.replaceAllUsesWith(shift_left);
-                                changed = true;
-                            } else if ((C->getValue() - 1).isPowerOf2()) {
-                                Constant *shiftCount = ConstantInt::get(C->getType(), (C->getValue() - 1).exactLogBase2());
-                                Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
-                                shift_left->insertAfter(&Inst);
+                        switch (instructionOpcode) {
+                            case Instruction::Mul: {
+                                if (C->getValue().isPowerOf2()) {
+                                    Constant *shiftCount = ConstantInt::get(C->getType(), C->getValue().exactLogBase2());
+                                    Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
+                                    shift_left->insertAfter(&Inst);
+                                    Inst.replaceAllUsesWith(shift_left);
+                                    changed = true;
+                                } else if ((C->getValue() - 1).isPowerOf2()) {
+                                    Constant *shiftCount = ConstantInt::get(C->getType(), (C->getValue() - 1).exactLogBase2());
+                                    Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
+                                    shift_left->insertAfter(&Inst);
 
-                                Instruction *new_add = BinaryOperator::Create(BinaryOperator::Add, shift_left, Param);
-                                new_add->insertAfter(shift_left);
-                                Inst.replaceAllUsesWith(new_add);
-                                changed = true;
-                            } else if ((C->getValue() + 1).isPowerOf2()) {
-                                Constant *shiftCount = ConstantInt::get(C->getType(), (C->getValue() + 1).exactLogBase2());
-                                Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
-                                shift_left->insertAfter(&Inst);
+                                    Instruction *new_add = BinaryOperator::Create(BinaryOperator::Add, shift_left, Param);
+                                    new_add->insertAfter(shift_left);
+                                    Inst.replaceAllUsesWith(new_add);
+                                    changed = true;
+                                } else if ((C->getValue() + 1).isPowerOf2()) {
+                                    Constant *shiftCount = ConstantInt::get(C->getType(), (C->getValue() + 1).exactLogBase2());
+                                    Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
+                                    shift_left->insertAfter(&Inst);
 
-                                Instruction *new_sub = BinaryOperator::Create(BinaryOperator::Sub, shift_left, Param);
-                                new_sub->insertAfter(shift_left);
-                                Inst.replaceAllUsesWith(new_sub);
-                                changed = true;
+                                    Instruction *new_sub = BinaryOperator::Create(BinaryOperator::Sub, shift_left, Param);
+                                    new_sub->insertAfter(shift_left);
+                                    Inst.replaceAllUsesWith(new_sub);
+                                    changed = true;
+                                }
+                                break;
                             }
-                            break;
-                        }
-                        case Instruction::SDiv: {
-                            if (C->getValue().isPowerOf2()) {
-                                Constant *shiftCount = ConstantInt::get(C->getType(), C->getValue().exactLogBase2());
-                                Instruction *shift_right = BinaryOperator::Create(BinaryOperator::LShr, Param, shiftCount);
-                                shift_right->insertAfter(&Inst);
-                                Inst.replaceAllUsesWith(shift_right);
-                                changed = true;
+                            case Instruction::SDiv: {
+                                if (C->getValue().isPowerOf2()) {
+                                    Constant *shiftCount = ConstantInt::get(C->getType(), C->getValue().exactLogBase2());
+                                    Instruction *shift_right = BinaryOperator::Create(BinaryOperator::LShr, Param, shiftCount);
+                                    shift_right->insertAfter(&Inst);
+                                    Inst.replaceAllUsesWith(shift_right);
+                                    changed = true;
+                                }
+                                break;
                             }
-                            break;
+                            default:
+                                break;
                         }
-                        default:
-                            break;
                     }
                 }
             }
-        }
 
-        return changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
-    }
+            return changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
+        }
 };
     
     // New PM implementation
@@ -207,10 +204,59 @@ namespace {
         // Main entry point, takes IR unit to run the pass on (&F) and the
         // corresponding pass manager (to be queried if need be).
         PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
-            errs() << "TBI MULTI-INSTRUCTION\n";
-            
-            // return true;
-            return PreservedAnalyses::all();
+            bool Modified = false;
+    
+    // Track instructions that define a value as b+1
+    std::map<Value*, Value*> addOneInstructions;
+    
+    // First pass - identify all b+1 patterns
+    for (auto &BB : F) {
+      for (auto &I : BB) {
+        if (BinaryOperator *BO = dyn_cast<BinaryOperator>(&I)) {
+          if (BO->getOpcode() == Instruction::Add) {
+            // Check if it's an "add 1" pattern
+            ConstantInt *CI = dyn_cast<ConstantInt>(BO->getOperand(1));
+            if (CI && CI->equalsInt(1)) {
+              // This is a "+1" operation, store mapping from result to operand
+              addOneInstructions[&I] = BO->getOperand(0);
+            }
+          }
+        }
+      }
+    }
+    
+    // Second pass - find a-1 where a was b+1, and replace with b
+    std::vector<Instruction*> toRemove;
+    for (auto &BB : F) {
+      for (auto &I : BB) {
+        if (BinaryOperator *BO = dyn_cast<BinaryOperator>(&I)) {
+          if (BO->getOpcode() == Instruction::Sub) {
+            // Check if it's a "sub 1" pattern
+            ConstantInt *CI = dyn_cast<ConstantInt>(BO->getOperand(1));
+            if (CI && CI->equalsInt(1)) {
+              // Get the value being subtracted from
+              Value *Operand = BO->getOperand(0);
+              
+              // Check if it was a result of a "+1" operation
+              auto it = addOneInstructions.find(Operand);
+              if (it != addOneInstructions.end()) {
+                // Replace all uses of this subtraction with the original value
+                BO->replaceAllUsesWith(it->second);
+                Modified = true;
+                toRemove.push_back(&I);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Remove instructions that are no longer needed
+    for (auto I : toRemove) {
+    I->eraseFromParent();
+    }
+    
+        return Modified ? PreservedAnalyses::none() : PreservedAnalyses::all();
     
         }
 
