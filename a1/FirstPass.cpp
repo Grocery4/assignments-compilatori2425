@@ -119,19 +119,70 @@ namespace {
     
     };
     
-    // New PM implementation
-    struct StrengthReductionPass: PassInfoMixin<StrengthReductionPass> {
-        // Main entry point, takes IR unit to run the pass on (&F) and the
-        // corresponding pass manager (to be queried if need be).
-        PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
-            errs() << "TBI STRENGTH REDUCTION\n";
-            
-            // return true;
-            return PreservedAnalyses::all();
-    
+    struct StrengthReductionPass : PassInfoMixin<StrengthReductionPass> {
+    // Main entry point, takes IR unit to run the pass on (&F) and the
+    // corresponding pass manager (to be queried if need be).
+    PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+        bool changed = false;
+
+        for (auto &B : F) { // Iterate over basic blocks
+            for (auto &Inst : B) { // Iterate over instructions
+                ConstantInt *C;
+                Value *Param;
+
+                // Check if the instruction has a constant operand
+                if (getConstantFromInstruction(Inst, C, Param)) {
+                    unsigned int instructionOpcode = Inst.getOpcode();
+
+                    switch (instructionOpcode) {
+                        case Instruction::Mul: {
+                            if (C->getValue().isPowerOf2()) {
+                                Constant *shiftCount = ConstantInt::get(C->getType(), C->getValue().exactLogBase2());
+                                Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
+                                shift_left->insertAfter(&Inst);
+                                Inst.replaceAllUsesWith(shift_left);
+                                changed = true;
+                            } else if ((C->getValue() - 1).isPowerOf2()) {
+                                Constant *shiftCount = ConstantInt::get(C->getType(), (C->getValue() - 1).exactLogBase2());
+                                Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
+                                shift_left->insertAfter(&Inst);
+
+                                Instruction *new_add = BinaryOperator::Create(BinaryOperator::Add, shift_left, Param);
+                                new_add->insertAfter(shift_left);
+                                Inst.replaceAllUsesWith(new_add);
+                                changed = true;
+                            } else if ((C->getValue() + 1).isPowerOf2()) {
+                                Constant *shiftCount = ConstantInt::get(C->getType(), (C->getValue() + 1).exactLogBase2());
+                                Instruction *shift_left = BinaryOperator::Create(BinaryOperator::Shl, Param, shiftCount);
+                                shift_left->insertAfter(&Inst);
+
+                                Instruction *new_sub = BinaryOperator::Create(BinaryOperator::Sub, shift_left, Param);
+                                new_sub->insertAfter(shift_left);
+                                Inst.replaceAllUsesWith(new_sub);
+                                changed = true;
+                            }
+                            break;
+                        }
+                        case Instruction::SDiv: {
+                            if (C->getValue().isPowerOf2()) {
+                                Constant *shiftCount = ConstantInt::get(C->getType(), C->getValue().exactLogBase2());
+                                Instruction *shift_right = BinaryOperator::Create(BinaryOperator::LShr, Param, shiftCount);
+                                shift_right->insertAfter(&Inst);
+                                Inst.replaceAllUsesWith(shift_right);
+                                changed = true;
+                            }
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+            }
         }
 
-    };  
+        return changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
+    }
+};
     
     // New PM implementation
     struct MultiInstructionPass: PassInfoMixin<MultiInstructionPass> {
