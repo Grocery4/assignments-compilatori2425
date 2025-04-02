@@ -144,7 +144,7 @@ llvm::PassPluginLibraryInfo getAlgebraicIdentityPassPluginInfo() {
             
             // This is the core interface for pass plugins. It guarantees that 'opt' will
             // be able to recognize AlgebraicIdentityPass when added to the pass pipeline on the
-            // command line, i.e. via '-passes=local-opts'
+            // command line, i.e. via '-passes=algebraic-identity'
             extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
             llvmGetPassPluginInfo() {
                 return getAlgebraicIdentityPassPluginInfo();
