@@ -32,6 +32,24 @@ using namespace llvm;
 // No need to expose the internals of the pass to the outside world - keep
 // everything in an anonymous namespace.
 namespace {
+
+    bool getConstantFromInstruction(Instruction &Inst, ConstantInt *&C, Value *&Param) {
+        if (auto *BO = dyn_cast<BinaryOperator>(&Inst)) {
+            Value *op1 = BO->getOperand(0);
+            Value *op2 = BO->getOperand(1);
+
+            if (auto *CI = dyn_cast<ConstantInt>(op1)) {
+                C = CI;
+                Param = op2;
+                return true;
+            } else if (auto *CI = dyn_cast<ConstantInt>(op2)) {
+                C = CI;
+                Param = op1;
+                return true;
+            }
+        }
+        return false;
+    }
     
     // New PM implementation
     struct AlgebraicIdentityPass: PassInfoMixin<AlgebraicIdentityPass> {
