@@ -5,6 +5,10 @@ clang -Xclang -disable-O0-optnone -S -emit-llvm -O0 <src>.cc -o <dest>.ll
 opt -p mem2reg <dest>.ll -o <dest-wo-loadstore>.m2r.bc
 llvm-dis <dest-wo-loadstore>.m2r.bc -o <dest-wo-loadstore>.m2r.ll
 ```
+
+Il file generato da questa serie di comandi sarà la base delle ottimizzazioni eseguite dal nostro codice
+implementato all'interno del file `FirstPass.cpp`.
+
 **Il file generato sarà poi soggetto a ottimizzazione**
 
 Una volta finito di modificare il `PassManager.cpp` eseguire il comando `make`
