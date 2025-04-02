@@ -155,7 +155,7 @@ namespace {
 //-----------------------------------------------------------------------------
 // New PM Registration
 //-----------------------------------------------------------------------------
-llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() {
+llvm::PassPluginLibraryInfo getFirstPassPluginInfo() {
     return {LLVM_PLUGIN_API_VERSION, "FirstPass", LLVM_VERSION_STRING,
         [](PassBuilder &PB) {
             PB.registerPipelineParsingCallback(
@@ -180,3 +180,12 @@ llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() {
                     });
                 }};
             }
+
+
+// This is the core interface for pass plugins. It guarantees that 'opt' will
+// be able to recognize AlgebraicIdentityPass when added to the pass pipeline on the
+// command line, i.e. via '-passes=algebraic-identity'
+extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
+llvmGetPassPluginInfo() {
+return getFirstPassPluginInfo();
+}
