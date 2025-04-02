@@ -9,7 +9,9 @@ llvm-dis <dest-wo-loadstore>.m2r.bc -o <dest-wo-loadstore>.m2r.ll
 
 Una volta finito di modificare il `PassManager.cpp` eseguire il comando `make`
 e se va a buon fine eseguire
-`opt -load-pass-plugin <path/to/build/dir>lib<nome>.so -passes=<pass> <src>.ll -o dest.ll`
+`opt -load-pass-plugin <path/to/build/dir>lib<nome>.so -passes=<pass> <src>.ll -o <dest>.ll`.
+
+Al posto di `-o <dest>.ll` è possibile usare `-disable-output` per evitare di creare un nuovo file.
 
 **Se la libreria non è ancora stata creata**
 ```
