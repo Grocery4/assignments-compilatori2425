@@ -118,6 +118,34 @@ namespace {
         }
     
     };
+    
+    // New PM implementation
+    struct StrengthReductionPass: PassInfoMixin<StrengthReductionPass> {
+        // Main entry point, takes IR unit to run the pass on (&F) and the
+        // corresponding pass manager (to be queried if need be).
+        PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+            errs() << "TBI STRENGTH REDUCTION\n";
+            
+            // return true;
+            return PreservedAnalyses::all();
+    
+        }
+
+    };  
+    
+    // New PM implementation
+    struct MultiInstructionPass: PassInfoMixin<MultiInstructionPass> {
+        // Main entry point, takes IR unit to run the pass on (&F) and the
+        // corresponding pass manager (to be queried if need be).
+        PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+            errs() << "TBI MULTI-INSTRUCTION\n";
+            
+            // return true;
+            return PreservedAnalyses::all();
+    
+        }
+
+    };  
     // Without isRequired returning true, this pass will be skipped for functions
     // decorated with the optnone LLVM attribute. Note that clang -O0 decorates
     // all functions with optnone.
@@ -127,8 +155,8 @@ namespace {
 //-----------------------------------------------------------------------------
 // New PM Registration
 //-----------------------------------------------------------------------------
-llvm::PassPluginLibraryInfo getAlgebraicIdentityPassPluginInfo() {
-    return {LLVM_PLUGIN_API_VERSION, "AlgebraicIdentityPass", LLVM_VERSION_STRING,
+llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() {
+    return {LLVM_PLUGIN_API_VERSION, "FirstPass", LLVM_VERSION_STRING,
         [](PassBuilder &PB) {
             PB.registerPipelineParsingCallback(
                 [](StringRef Name, FunctionPassManager &FPM,
@@ -137,16 +165,18 @@ llvm::PassPluginLibraryInfo getAlgebraicIdentityPassPluginInfo() {
                             FPM.addPass(AlgebraicIdentityPass());
                             return true;
                         }
+
+                        if (Name == "strength-reduction") {
+                            FPM.addPass(StrengthReductionPass());
+                            return true;
+                        }
+                        
+                        if (Name == "multi-instruction") {
+                            FPM.addPass(MultiInstructionPass());
+                            return true;
+                        }
+
                         return false;
                     });
                 }};
             }
-            
-            // This is the core interface for pass plugins. It guarantees that 'opt' will
-            // be able to recognize AlgebraicIdentityPass when added to the pass pipeline on the
-            // command line, i.e. via '-passes=algebraic-identity'
-            extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
-            llvmGetPassPluginInfo() {
-                return getAlgebraicIdentityPassPluginInfo();
-            }
-            
