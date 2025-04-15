@@ -1,5 +1,8 @@
 # Very Busy Expressions
 
+![image](https://github.com/user-attachments/assets/98b05235-cca0-4e98-aefb-14d4e39698ed)
+
+
 #### Framework
 
 | Proprietà                  | Descrizione                                                                                                                                                                                                                                                                                                                               |
@@ -29,6 +32,9 @@ Iterazione 1 (unica iterazione)
 ---
 
 # Dominator analysis
+
+![{D81722E7-C6BF-4E2E-8012-B055005A14ED}](https://github.com/user-attachments/assets/032d10cf-57e9-441f-8dd1-d332fb0e9be6)
+
 
 **Framework**
 
