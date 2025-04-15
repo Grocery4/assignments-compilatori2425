@@ -72,3 +72,22 @@ Iterazione 2
 | E          | C,A                    | E,C,A   |
 | F          | {D,C,A} $\cap$ {E,C,A} | F,C,A   |
 | G          | {B,A} $\cap$ {F,C,A}   | G,A     |
+
+## Constant Propagation
+
+![cfg](https://github.com/user-attachments/assets/5cce3344-9ced-4b28-880f-02d7166b8229)
+
+**Framework**
+
+| **Proprietà**              | **Descrizione**                                                                                                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Domain**                 | Insieme di (\<variable>,\<const-value>)                                                                                                                                    |
+| **Direction**              | Forward: <br> $out[b]=f_b(in[b])$ <br> $in[b]=\land \ out[pred(b)]$ |
+| **Transfer Function**      | $f_b(x)=Gen_b \ \cup \ (x-Kill_b)$
+| **Meet Operator**          | $\cap$
+| **Boundary condition**     | $out[entry] = \emptyset$               |
+| **Initial Interior Point** | $out[b] = U$                                                  |
+
+#### Analisi
+
+![itertable](https://github.com/user-attachments/assets/46947309-0962-431a-9eb1-b3a2c63b4f5c)
